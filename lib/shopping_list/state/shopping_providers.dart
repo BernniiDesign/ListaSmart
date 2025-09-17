@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../data/shopping_data_source.dart';
 import '../repo/shopping_repository.dart';
 import '../model/shopping_list.dart';

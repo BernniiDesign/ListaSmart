@@ -122,6 +122,29 @@ class _PurchasesListView extends ConsumerWidget {
 }
 
 class _PurchaseCard extends ConsumerWidget {
+
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Usa punto como separador (estilo Costa Rica)
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
+  }
+
   final Purchase purchase;
   
   const _PurchaseCard({required this.purchase});
@@ -157,7 +180,7 @@ class _PurchaseCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '${purchase.currency} ${purchase.totalAmount.toStringAsFixed(0)}',
+              '₡${_formatNumberWithSeparator(purchase.totalAmount)}',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: colorScheme.primary,
@@ -172,7 +195,9 @@ class _PurchaseCard extends ConsumerWidget {
         onTap: () => _navigateToPurchaseDetail(context),
       ),
     );
+
   }
+  
 
 void _navigateToPurchaseDetail(BuildContext context) {
   Navigator.of(context).push(

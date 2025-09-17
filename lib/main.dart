@@ -18,7 +18,7 @@ class GroceryApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Grocery List',
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       home: const AuthGate(),
     );
   }

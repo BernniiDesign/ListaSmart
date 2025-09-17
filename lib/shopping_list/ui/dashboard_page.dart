@@ -58,7 +58,7 @@ class _SummaryCards extends ConsumerWidget {
             Expanded(
               child: _SummaryCard(
                 title: 'Este mes',
-                value: '₡${thisMonthTotal.toStringAsFixed(0)}',
+                value:'₡${_formatNumberWithSeparator(thisMonthTotal)}',
                 subtitle: '${thisMonthPurchases.length} compras',
                 icon: Icons.calendar_month,
                 color: Colors.blue,
@@ -68,7 +68,7 @@ class _SummaryCards extends ConsumerWidget {
             Expanded(
               child: _SummaryCard(
                 title: 'Promedio',
-                value: '₡${avgPurchase.toStringAsFixed(0)}',
+                value: '₡${_formatNumberWithSeparator(avgPurchase)}',
                 subtitle: 'por compra',
                 icon: Icons.trending_up,
                 color: Colors.green,
@@ -78,6 +78,29 @@ class _SummaryCards extends ConsumerWidget {
         );
       },
     );
+  }
+
+  
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Usa punto como separador (estilo Costa Rica)
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
   }
 }
 
@@ -200,6 +223,29 @@ class _SummaryCardSkeleton extends StatelessWidget {
 }
 
 class _SpendingByStoreSection extends ConsumerWidget {
+
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Usa punto como separador (estilo Costa Rica)
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final spendingAsync = ref.watch(spendingByStoreProvider);
@@ -252,7 +298,8 @@ class _SpendingByStoreSection extends ConsumerWidget {
   title: Text(store['store_name'] ?? 'Tienda desconocida'),
   subtitle: Text('${store['purchase_count'] ?? 0} compras'),
   trailing: Text(
-    '₡${(store['total_spent'] as num?)?.toStringAsFixed(0) ?? '0'}',
+    //'₡${(store['total_spent'] as num?)?.toStringAsFixed(0) ?? '0'}',
+    '₡${_formatNumberWithSeparator(store['total_spent'])}',
     style: Theme.of(context).textTheme.titleMedium?.copyWith(
       fontWeight: FontWeight.bold,
     ),
@@ -287,7 +334,32 @@ class _SpendingByStoreSection extends ConsumerWidget {
 }
 
 class _MonthlySpendingSection extends ConsumerWidget {
+
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Usa punto como separador (estilo Costa Rica)
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
+  }
+
   @override
+
+  
   Widget build(BuildContext context, WidgetRef ref) {
     final monthlyAsync = ref.watch(monthlySpendingProvider);
     
@@ -342,7 +414,8 @@ class _MonthlySpendingSection extends ConsumerWidget {
                       title: Text('$monthName ${monthDate.year}'),
                       subtitle: Text('${month['purchase_count'] ?? 0} compras'),
                       trailing: Text(
-                        '₡${(month['total_spent'] as num?)?.toStringAsFixed(0) ?? '0'}',
+                        //'₡${(month['total_spent'] as num?)?.toStringAsFixed(0) ?? '0'}',
+                        '₡${_formatNumberWithSeparator(month['total_spent'])}',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -368,6 +441,29 @@ class _MonthlySpendingSection extends ConsumerWidget {
 }
 
 class _TopProductsSection extends ConsumerWidget {
+
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Usa punto como separador (estilo Costa Rica)
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final averagePricesAsync = ref.watch(averagePricesProvider);
@@ -424,7 +520,8 @@ class _TopProductsSection extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '₡${(item['avg_price'] as num?)?.toStringAsFixed(0) ?? '0'}',
+                            //'₡${(item['avg_price'] as num?)?.toStringAsFixed(0) ?? '0'}',
+                            '₡${_formatNumberWithSeparator(item['avg_price'])}',
                             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),

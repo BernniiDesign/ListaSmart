@@ -382,48 +382,140 @@ class _PurchaseItemCard extends ConsumerWidget {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: colorScheme.secondaryContainer,
-          foregroundColor: colorScheme.onSecondaryContainer,
-          child: Text('${item.qty}'),
-        ),
-        title: Text(item.name),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
           children: [
-            Text('₡${item.unitPrice.toStringAsFixed(0)} c/u'),
-            if (item.category != null)
-              Text(item.category!, style: Theme.of(context).textTheme.bodySmall),
-            if (item.notes != null)
-              Text(item.notes!, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '₡${item.totalPrice.toStringAsFixed(0)}',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
-              ),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (value) => _handleItemAction(context, ref, value),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Text('Editar'),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Cantidad en círculo
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${item.qty}',
+                      style: TextStyle(
+                        color: colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 ),
-                const PopupMenuItem(
-                  value: 'price_history',
-                  child: Text('Ver historial'),
+                const SizedBox(width: 12),
+                
+                // Información del producto (expandible)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₡${_formatNumberWithSeparator(item.unitPrice)} c/u',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      if (item.category != null) ...[
+                        const SizedBox(height: 2),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            item.category!,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (item.notes != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          item.notes!,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                
+                // Precio y menú (sin restricción de ancho)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₡${_formatNumberWithSeparator(item.totalPrice)}',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      onSelected: (value) => _handleItemAction(context, ref, value),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: 18, color: colorScheme.primary),
+                              const SizedBox(width: 8),
+                              const Text('Editar'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'price_history',
+                          child: Row(
+                            children: [
+                              Icon(Icons.history, size: 18, color: colorScheme.secondary),
+                              const SizedBox(width: 8),
+                              const Text('Ver historial'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.delete, size: 18, color: Colors.red),
+                              const SizedBox(width: 8),
+                              const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -431,6 +523,180 @@ class _PurchaseItemCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+// OPCIÓN ALTERNATIVA: ListTile mejorado (comenta el código anterior si usas esta versión)
+/*
+class _PurchaseItemCard extends ConsumerWidget {
+  final PurchaseItem item;
+  final String purchaseId;
+  
+  const _PurchaseItemCard({
+    required this.item,
+    required this.purchaseId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: colorScheme.secondaryContainer,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              '${item.qty}',
+              style: TextStyle(
+                color: colorScheme.onSecondaryContainer,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+        title: Text(
+          item.name,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              '₡${_formatNumberWithSeparator(item.unitPrice)} c/u',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (item.category != null) ...[
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  item.category!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+            if (item.notes != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                item.notes!,
+                style: Theme.of(context).textTheme.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '₡${_formatNumberWithSeparator(item.totalPrice)}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Total',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                Icons.more_vert,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              onSelected: (value) => _handleItemAction(context, ref, value),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 18, color: colorScheme.primary),
+                      const SizedBox(width: 8),
+                      const Text('Editar'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'price_history',
+                  child: Row(
+                    children: [
+                      Icon(Icons.history, size: 18, color: colorScheme.secondary),
+                      const SizedBox(width: 8),
+                      const Text('Ver historial'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.delete, size: 18, color: Colors.red),
+                      const SizedBox(width: 8),
+                      const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // ... resto del código igual
+}
+*/
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Punto como separador estilo Costa Rica
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
   }
 
   Future<void> _handleItemAction(BuildContext context, WidgetRef ref, String action) async {
@@ -465,7 +731,6 @@ class _PurchaseItemCard extends ConsumerWidget {
         break;
         
       case 'price_history':
-        // Mostrar historial de precios de este producto
         _showPriceHistory(context, ref);
         break;
         
@@ -481,6 +746,9 @@ class _PurchaseItemCard extends ConsumerWidget {
                 child: const Text('Cancelar'),
               ),
               FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
                 onPressed: () => Navigator.of(context).pop(true),
                 child: const Text('Eliminar'),
               ),
@@ -551,7 +819,7 @@ class _PriceHistoryDialog extends ConsumerWidget {
                         title: Text(record.storeName),
                         subtitle: Text(_formatDate(record.purchaseDate)),
                         trailing: Text(
-                          '₡${record.price.toStringAsFixed(0)}',
+                          '₡${_formatNumberWithSeparator(record.price)}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       );
@@ -574,6 +842,28 @@ class _PriceHistoryDialog extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Punto como separador
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
   }
 }
 
@@ -631,7 +921,7 @@ class _PurchaseSummaryCard extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          '${purchase.currency} ${calculatedTotal.toStringAsFixed(0)}',
+                          '${purchase.currency} ${_formatNumberWithSeparator(calculatedTotal)}',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: colorScheme.primary,
@@ -680,6 +970,28 @@ class _PurchaseSummaryCard extends ConsumerWidget {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+
+  // Función helper para formatear números con separador de miles
+  String _formatNumberWithSeparator(double number) {
+    final intPart = number.round();
+    final str = intPart.toString();
+    
+    if (str.length <= 3) return str;
+    
+    String result = '';
+    int count = 0;
+    
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = '.$result'; // Usa punto como separador (estilo Costa Rica)
+        count = 0;
+      }
+      result = str[i] + result;
+      count++;
+    }
+    
+    return result;
+  }
 }
 
 class _EmptyItemsState extends StatelessWidget {
@@ -695,53 +1007,70 @@ class _EmptyItemsState extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.shopping_cart_outlined,
-            size: 120,
-            color: colorScheme.outline,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Sin productos aún',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Agrega los productos que compraste\ncon sus precios',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+    return SingleChildScrollView( // Permitir scroll si es necesario
+      padding: const EdgeInsets.all(16), // Padding para evitar tocar bordes
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Solo el tamaño necesario
+          children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: 100, // Reducir tamaño del icono
+              color: colorScheme.outline,
             ),
-          ),
-          const SizedBox(height: 32),
-          if (onUseList != null) ...[
-            FilledButton.icon(
-              onPressed: onUseList,
-              icon: const Icon(Icons.checklist),
-              label: const Text('Usar Lista Base'),
-              style: FilledButton.styleFrom(
-                backgroundColor: colorScheme.secondary,
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16), // Reducir espacios
             Text(
-              'o',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              'Sin productos aún',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Agrega los productos que compraste\ncon sus precios',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24), // Reducir espacio
+            
+            // Botones en una columna compacta
+            if (onUseList != null) ...[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onUseList,
+                  icon: const Icon(Icons.checklist),
+                  label: const Text('Usar Lista Base'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.secondary,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'o',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+            ],
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onAddItem,
+                icon: const Icon(Icons.add_shopping_cart),
+                label: const Text('Agregar Manualmente'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+              ),
+            ),
           ],
-          FilledButton.icon(
-            onPressed: onAddItem,
-            icon: const Icon(Icons.add_shopping_cart),
-            label: const Text('Agregar Manualmente'),
-          ),
-        ],
+        ),
       ),
     );
   }

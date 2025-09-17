@@ -57,35 +57,50 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
   @override
   Widget build(BuildContext context) {
     final listItemsAsync = ref.watch(listItemsProvider(widget.list.id));
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600; // Detección de pantalla pequeña
 
     return Dialog(
+      insetPadding: const EdgeInsets.all(16), // Márgenes más pequeños en móvil
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.all(16),
+        width: double.infinity, // Usar todo el ancho disponible
+        height: MediaQuery.of(context).size.height * 0.85, // Aumentar altura ligeramente
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
-              children: [
-                Icon(Icons.checklist, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Completar: ${widget.list.name}',
-                    style: Theme.of(context).textTheme.titleLarge,
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.checklist, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Completar: ${widget.list.name}',
+                          style: Theme.of(context).textTheme.titleLarge,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  const Divider(height: 1),
+                ],
+              ),
             ),
-            const Divider(),
             
-            // Lista de items
+            // Lista de items (expandible)
             Expanded(
               child: listItemsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -96,6 +111,7 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
                   }
                   
                   return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
@@ -118,6 +134,7 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
                                         _checkedItems[item.id] = value ?? false;
                                       });
                                     },
+                                    visualDensity: VisualDensity.compact,
                                   ),
                                   Expanded(
                                     child: Text(
@@ -131,76 +148,147 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
                                     ),
                                   ),
                                   if (item.category != null)
-                                    Chip(
-                                      label: Text(item.category!),
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        item.category!,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                        ),
+                                      ),
                                     ),
                                 ],
                               ),
                               
                               if (isChecked) ...[
-                                const SizedBox(height: 8),
-                                // Cantidad y unidad
-                                Row(
-                                  children: [
-                                    // Cantidad
-                                    Expanded(
-                                      flex: 2,
-                                      child: TextFormField(
-                                        controller: _quantityControllers[item.id],
-                                        decoration: const InputDecoration(
-                                          labelText: 'Cantidad',
-                                          isDense: true,
-                                        ),
-                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                const SizedBox(height: 12),
+                                // Layout responsivo para campos de entrada
+                                if (isSmallScreen) 
+                                  // Móvil: Layout vertical en columnas
+                                  Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextFormField(
+                                              controller: _quantityControllers[item.id],
+                                              decoration: const InputDecoration(
+                                                labelText: 'Cantidad',
+                                                isDense: true,
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: DropdownButtonFormField<String>(
+                                              value: _unitTypes[item.id],
+                                              decoration: const InputDecoration(
+                                                labelText: 'Unidad',
+                                                isDense: true,
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              items: const [
+                                                DropdownMenuItem(value: 'unidad', child: Text('Unidad')),
+                                                DropdownMenuItem(value: 'kg', child: Text('Kg')),
+                                                DropdownMenuItem(value: 'gramos', child: Text('Gramos')),
+                                                DropdownMenuItem(value: 'litros', child: Text('Litros')),
+                                              ],
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _unitTypes[item.id] = value ?? 'unidad';
+                                                });
+                                              },
+                                            ),
+                                          ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    
-                                    // Tipo de unidad
-                                    Expanded(
-                                      flex: 2,
-                                      child: DropdownButtonFormField<String>(
-                                        value: _unitTypes[item.id],
-                                        decoration: const InputDecoration(
-                                          labelText: 'Unidad',
-                                          isDense: true,
-                                        ),
-                                        items: const [
-                                          DropdownMenuItem(value: 'unidad', child: Text('Unidad')),
-                                          DropdownMenuItem(value: 'kg', child: Text('Kg')),
-                                          DropdownMenuItem(value: 'gramos', child: Text('Gramos')),
-                                          DropdownMenuItem(value: 'litros', child: Text('Litros')),
-                                        ],
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _unitTypes[item.id] = value ?? 'unidad';
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    
-                                    // Precio
-                                    Expanded(
-                                      flex: 2,
-                                      child: TextFormField(
+                                      const SizedBox(height: 8),
+                                      TextFormField(
                                         controller: _priceControllers[item.id],
                                         decoration: const InputDecoration(
-                                          labelText: 'Precio (₡)',
+                                          labelText: 'Precio Total (CRC)',
                                           isDense: true,
+                                          border: OutlineInputBorder(),
+                                          prefixText: '₡ ',
                                         ),
                                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                         inputFormatters: [
                                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                                         ],
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  )
+                                else 
+                                  // Tablet/Desktop: Layout horizontal
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: TextFormField(
+                                          controller: _quantityControllers[item.id],
+                                          decoration: const InputDecoration(
+                                            labelText: 'Cantidad',
+                                            isDense: true,
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        flex: 2,
+                                        child: DropdownButtonFormField<String>(
+                                          value: _unitTypes[item.id],
+                                          decoration: const InputDecoration(
+                                            labelText: 'Unidad',
+                                            isDense: true,
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          items: const [
+                                            DropdownMenuItem(value: 'unidad', child: Text('Unidad')),
+                                            DropdownMenuItem(value: 'kg', child: Text('Kg')),
+                                            DropdownMenuItem(value: 'gramos', child: Text('Gramos')),
+                                            DropdownMenuItem(value: 'litros', child: Text('Litros')),
+                                          ],
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _unitTypes[item.id] = value ?? 'unidad';
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        flex: 2,
+                                        child: TextFormField(
+                                          controller: _priceControllers[item.id],
+                                          decoration: const InputDecoration(
+                                            labelText: 'Precio (CRC)',
+                                            isDense: true,
+                                            border: OutlineInputBorder(),
+                                            prefixText: '₡ ',
+                                          ),
+                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ],
                           ),
@@ -212,26 +300,87 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
               ),
             ),
             
-            const Divider(),
-            
-            // Resumen y botones
-            Row(
-              children: [
-                Text(
-                  'Items seleccionados: ${_checkedItems.values.where((checked) => checked).length}',
-                  style: Theme.of(context).textTheme.titleMedium,
+            // Footer con layout responsivo
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                border: Border(
+                  top: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                  ),
                 ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: _saveSelectedItems,
-                  child: const Text('Guardar Compra'),
-                ),
-              ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Contador de items
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Items seleccionados: ${_checkedItems.values.where((checked) => checked).length}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Botones responsivos
+                  if (isSmallScreen)
+                    // Móvil: Botones en columna
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _saveSelectedItems,
+                            icon: const Icon(Icons.save),
+                            label: const Text('Guardar Compra'),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancelar'),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    // Tablet/Desktop: Botones en fila
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancelar'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: _saveSelectedItems,
+                            icon: const Icon(Icons.save),
+                            label: const Text('Guardar Compra'),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
             ),
           ],
         ),
@@ -275,6 +424,27 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
     }
 
     try {
+      // Mostrar loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Guardando productos...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
       // Agregar cada item seleccionado a la compra
       for (final itemData in selectedItems) {
         await ref.read(purchaseItemsProvider(widget.purchase.id).notifier).addItem(
@@ -287,15 +457,23 @@ class _ShoppingChecklistDialogState extends ConsumerState<ShoppingChecklistDialo
       }
 
       if (mounted) {
-        Navigator.of(context).pop(true); // Retornar true para indicar éxito
+        Navigator.of(context).pop(); // Cerrar loading
+        Navigator.of(context).pop(true); // Cerrar diálogo principal
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${selectedItems.length} productos agregados a la compra')),
+          SnackBar(
+            content: Text('${selectedItems.length} productos agregados a la compra'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
+        Navigator.of(context).pop(); // Cerrar loading
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar productos: $e')),
+          SnackBar(
+            content: Text('Error al guardar productos: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     }
