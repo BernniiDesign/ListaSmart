@@ -4,6 +4,9 @@ import '../state/shopping_providers.dart';
 import '../model/shopping_list.dart';
 import '../model/shopping_list.dart' as models;
 import 'dialogs/list_item_dialog.dart';
+import 'dialogs/create_purchase_dialog.dart';
+import 'purchase_detail_page.dart';
+import '../model/store_purchase_models.dart';
 
 class ShoppingListDetailPage extends ConsumerWidget {
   final ShoppingList list;
@@ -85,14 +88,23 @@ class ShoppingListDetailPage extends ConsumerWidget {
     }
   }
 
-  void _handleAction(BuildContext context, WidgetRef ref, String action) {
+  Future<void> _handleAction(BuildContext context, WidgetRef ref, String action) async {
     switch (action) {
-      case 'use_for_purchase':
-        // Navegar a crear compra con esta lista
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Función próximamente')),
-        );
-        break;
+case 'use_for_purchase':
+  final result = await showDialog<Purchase>(
+    context: context,
+    builder: (context) => CreatePurchaseDialog(preselectedList: list),
+  );
+  
+  if (result != null && context.mounted) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PurchaseDetailPage(purchase: result),
+      ),
+    );
+  }
+  break;
+
       case 'clear_all':
         // Confirmar y limpiar todos los items
         _showClearAllDialog(context, ref);

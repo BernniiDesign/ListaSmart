@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/shopping_providers.dart';
 import '../model/store_purchase_models.dart';
-
+import 'purchase_detail_page.dart';
+import 'dialogs/create_purchase_dialog.dart';
 class PurchasesPage extends ConsumerWidget {
   const PurchasesPage({super.key});
 
@@ -41,12 +42,20 @@ class PurchasesPage extends ConsumerWidget {
   }
 
   Future<void> _createNewPurchase(BuildContext context, WidgetRef ref) async {
-    // Por ahora solo creamos una compra simple
-    // En una implementación completa, esto abriría un diálogo para seleccionar tienda y lista
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función próximamente - Crear nueva compra')),
+  final result = await showDialog<Purchase>(
+    context: context,
+    builder: (context) => const CreatePurchaseDialog(),
+  );
+
+  if (result != null && context.mounted) {
+    // Navegar directamente al detalle de la compra recién creada
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PurchaseDetailPage(purchase: result),
+      ),
     );
   }
+}
 }
 
 class _EmptyState extends StatelessWidget {
@@ -165,12 +174,13 @@ class _PurchaseCard extends ConsumerWidget {
     );
   }
 
-  void _navigateToPurchaseDetail(BuildContext context) {
-    // Navegar a detalle de compra
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función próximamente - Ver detalle de compra')),
-    );
-  }
+void _navigateToPurchaseDetail(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => PurchaseDetailPage(purchase: purchase),
+    ),
+  );
+}
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();

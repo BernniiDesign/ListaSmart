@@ -4,6 +4,9 @@ import '../state/shopping_providers.dart';
 import '../model/shopping_list.dart';
 import 'shopping_list_detail_page.dart';
 import 'dialogs/list_dialog.dart';
+import 'dialogs/create_purchase_dialog.dart';
+import 'purchase_detail_page.dart';
+import '../model/store_purchase_models.dart';
 
 class ShoppingListsPage extends ConsumerWidget {
   const ShoppingListsPage({super.key});
@@ -218,13 +221,21 @@ class _ListCard extends ConsumerWidget {
         );
         break;
         
-      case 'use_for_purchase':
-        // Navegar a crear compra con esta lista
-        // TODO: Implementar navegación a crear compra
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Función próximamente')),
-        );
-        break;
+case 'use_for_purchase':
+  final result = await showDialog<Purchase>(
+    context: context,
+    builder: (context) => CreatePurchaseDialog(preselectedList: list),
+  );
+  
+  if (result != null && context.mounted) {
+    // Navegar al detalle de la compra
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PurchaseDetailPage(purchase: result),
+      ),
+    );
+  }
+  break;
         
       case 'delete':
         final confirmed = await showDialog<bool>(

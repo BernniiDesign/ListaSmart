@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/shopping_providers.dart';
 import '../model/store_purchase_models.dart';
 import 'dialogs/store_dialog.dart';
-
+import '../ui/store_detail_page.dart';
 class StoresPage extends ConsumerWidget {
   const StoresPage({super.key});
 
@@ -190,12 +190,13 @@ class _StoreCard extends ConsumerWidget {
     );
   }
 
-  void _navigateToStoreDetail(BuildContext context) {
-    // Navegar a detalle de tienda con sus compras y estadísticas
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función próximamente - Ver detalle de tienda')),
-    );
-  }
+ void _navigateToStoreDetail(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => StoreDetailPage(store: store),
+    ),
+  );
+}
 
   Future<void> _handleMenuAction(BuildContext context, WidgetRef ref, String action) async {
     switch (action) {
@@ -216,12 +217,13 @@ class _StoreCard extends ConsumerWidget {
         }
         break;
         
-      case 'view_purchases':
-        // Ver compras en esta tienda
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Función próximamente - Ver compras de esta tienda')),
-        );
-        break;
+case 'view_purchases':
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => StoreDetailPage(store: store),
+    ),
+  );
+  break;
         
       case 'delete':
         final confirmed = await showDialog<bool>(

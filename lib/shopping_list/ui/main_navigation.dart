@@ -5,6 +5,8 @@ import 'shopping_lists_page.dart';
 import 'purchases_page.dart';
 import 'dashboard_page.dart';
 import 'stores_page.dart';
+import 'purchase_detail_page.dart';
+import '../model/store_purchase_models.dart';
 
 class MainNavigation extends ConsumerStatefulWidget {
   const MainNavigation({super.key});
@@ -87,6 +89,22 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         return 'Tiendas';
       default:
         return 'Lista Smart';
+    }
+  }
+
+  // Método helper para navegación desde otras partes de la app
+  void navigateToPurchaseDetail(Purchase purchase) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PurchaseDetailPage(purchase: purchase),
+      ),
+    );
+  }
+
+  // Método helper para navegar a una pestaña específica
+  void navigateToTab(int tabIndex) {
+    if (tabIndex >= 0 && tabIndex < _destinations.length) {
+      setState(() => _selectedIndex = tabIndex);
     }
   }
 }

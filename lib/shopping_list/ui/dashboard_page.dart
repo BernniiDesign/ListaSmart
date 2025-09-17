@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/shopping_providers.dart';
+import 'store_detail_page.dart';
+import '../model/store_purchase_models.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -243,19 +245,36 @@ class _SpendingByStoreSection extends ConsumerWidget {
                 child: Column(
                   children: stores.take(5).map((store) {
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                        child: const Icon(Icons.store),
-                      ),
-                      title: Text(store['store_name'] ?? 'Tienda desconocida'),
-                      subtitle: Text('${store['purchase_count'] ?? 0} compras'),
-                      trailing: Text(
-                        '₡${(store['total_spent'] as num?)?.toStringAsFixed(0) ?? '0'}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    );
+  leading: CircleAvatar(
+    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+    child: const Icon(Icons.store),
+  ),
+  title: Text(store['store_name'] ?? 'Tienda desconocida'),
+  subtitle: Text('${store['purchase_count'] ?? 0} compras'),
+  trailing: Text(
+    '₡${(store['total_spent'] as num?)?.toStringAsFixed(0) ?? '0'}',
+    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  onTap: () {
+    // Encontrar la tienda y navegar
+    final storesAsync = ref.read(storesProvider);
+    final stores = storesAsync.value ?? [];
+    final foundStore = stores.cast<Store?>().firstWhere(
+      (s) => s?.name == store['store_name'],
+      orElse: () => null,
+    );
+    
+    if (foundStore != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => StoreDetailPage(store: foundStore),
+        ),
+      );
+    }
+  },
+);
                   }).toList(),
                 ),
               ),
